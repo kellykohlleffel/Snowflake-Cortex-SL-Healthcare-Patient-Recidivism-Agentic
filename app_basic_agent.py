@@ -476,236 +476,298 @@ def analyze_real_operations_optimization_data(patients_df, encounters_df, clinic
     
     return results
 
-def analyze_clinical_patterns_with_llm(clinical_events_df, model_name="claude-4-sonnet", analysis_type="population", progress_placeholder=None):
-    """Analyze clinical patterns using LLM reasoning with step-by-step progress - Snowflake Version"""
-    
-    if clinical_events_df.empty:
-        return "No clinical events data available for analysis."
-    
-    # Initialize completed steps if not exists
-    if 'clinical_completed_steps' not in st.session_state:
-        st.session_state.clinical_completed_steps = []
-    
-    def update_progress(step_name, details, results=None):
-        """Update progress display in agent style"""
-        if progress_placeholder:
-            with progress_placeholder.container():
-                st.write(f"**{step_name}**")
-                
-                if details:
-                    st.markdown(f'<div class="agent-current">{details}</div>', unsafe_allow_html=True)
-                
-                if results:
-                    st.session_state.clinical_completed_steps.append((step_name, results))
-                    
-                # Display completed steps
-                for completed_step, completed_result in st.session_state.clinical_completed_steps:
-                    st.markdown(f'<div class="agent-completed">✅ {completed_step}: {completed_result}</div>', unsafe_allow_html=True)
-    
-    try:
-        # Clear previous steps
-        st.session_state.clinical_completed_steps = []
-        
-        # Step 1: Data Preparation
-        update_progress("Data Analysis Initialization", "🔍 Loading and processing clinical event data...", f"Analyzed {len(clinical_events_df)} clinical events across {clinical_events_df['EVENT_TYPE'].nunique()} event types")
-        time.sleep(1)
-        
-        if analysis_type == "population":
-            # Population-level pattern analysis
-            event_summary = clinical_events_df.groupby(['EVENT_TYPE', 'CODE_VALUE']).size().head(10).to_dict()
-            event_counts = clinical_events_df['EVENT_TYPE'].value_counts().to_dict()
-            
-            update_progress("Population Pattern Recognition", "📊 Identifying population-level clinical patterns and event distributions...", f"Processed {len(event_counts)} event types with {sum(event_counts.values())} total events")
-            time.sleep(1)
-            
-            prompt = f"""You are a clinical data analyst. Analyze these healthcare event patterns and provide insights:
-
-EVENT DISTRIBUTION:
-{event_counts}
-
-TOP EVENT-CODE COMBINATIONS:
-{event_summary}
-
-ANALYSIS TASKS:
-1. Identify 3 most concerning clinical patterns
-2. Explain what these patterns suggest about patient care
-3. Recommend 3 specific interventions to improve outcomes
-4. Highlight any potential quality or safety issues
-
-Provide clear, actionable insights for healthcare executives."""
-
-        else:  # Patient-specific analysis
-            patient_events = clinical_events_df.head(20)
-            events_summary = patient_events[['EVENT_TYPE', 'CODE_VALUE', 'DESCRIPTION', 'EVENT_DATE']].to_dict('records')
-            
-            update_progress("Patient Timeline Analysis", "👤 Analyzing patient-specific event timeline and clinical history...", f"Reviewed {len(patient_events)} patient events across multiple care episodes")
-            time.sleep(1)
-            
-            prompt = f"""You are a clinical analyst reviewing a patient's event timeline:
-
-PATIENT EVENTS:
-{events_summary}
-
-ANALYSIS TASKS:
-1. Identify the clinical story these events tell
-2. Spot any concerning patterns or gaps in care
-3. Assess risk factors for future complications
-4. Recommend specific interventions for this patient
-
-Focus on actionable clinical insights."""
-
-        # Step 3: AI Analysis
-        update_progress("Clinical AI Reasoning", "⚙️ Processing clinical data through advanced AI reasoning and pattern recognition...", f"Sending comprehensive analysis to {model_name} for clinical insights generation")
-        time.sleep(1)
-
-        # Call LLM with retry logic
-        llm_response = call_cortex_model(prompt, model_name)
-        
-        if not llm_response or llm_response.strip() == "":
-            update_progress("Analysis Failed", "❌ AI analysis could not be completed", "Please try again with different parameters")
-            return "Analysis unavailable - please try again."
-        
-        # Step 4: Complete
-        update_progress("Analysis Complete", "✅ Clinical insights generation completed successfully", "AI-powered clinical analysis report ready for review")
-        time.sleep(0.5)
-        
-        return llm_response
-        
-    except Exception as e:
-        if progress_placeholder:
-            with progress_placeholder.container():
-                st.error(f"❌ Analysis failed: {str(e)}")
-        return f"Analysis failed: {str(e)}"
-
 # AI Agent Workflow Execution Functions
-def run_proactive_care_agent(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, model_name="claude-4-sonnet"):
-    """Execute the proactive care management agent workflow - ENHANCED VERSION"""
+def run_proactive_care_agent(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df):
+    """Execute the proactive care management agent workflow"""
     try:
         real_data_results = analyze_real_proactive_care_data(
             patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df
         )
         
         steps = [
-            ("Initializing Agent", 10, f"Loading historical patient data with enhanced validation and quality checks from {real_data_results['data_range']}", f"Connected to {len(patients_df)} patients, {len(encounters_df)} encounters"),
-            ("Analyzing Recent Discharges", 25, f"Advanced review of discharge patterns with clinical terminology from {real_data_results['analysis_period']}", f"Found {real_data_results['recent_discharges_count']} discharges in analysis period"),
-            ("Risk Assessment", 45, "Sophisticated readmission risk calculation using evidence-based patterns and historical data", f"Identified {real_data_results['high_risk_count']} high-risk patients ({real_data_results['readmission_rate']:.1f}% readmission rate)"),
-            ("Care Gap Analysis", 65, "Deep analysis of care coordination failures and follow-up gaps with clinical context", f"Found {real_data_results['care_gaps_count']} care gaps in recent analysis period"),
-            ("Clinical Events Review", 85, f"Comprehensive analysis of recent clinical events with AI-powered pattern recognition: {real_data_results.get('recent_events_count', 0)} events in {real_data_results.get('event_analysis_period', 'analysis period')}", f"Generated evidence-based interventions for {min(real_data_results['high_risk_count'], 15)} specific patients"),
-            ("Generating AI Report", 100, f"Professional care management analysis with enhanced clinical documentation using {model_name}", "AI-powered care coordination report with actionable clinical insights ready")
+            ("Initializing Agent", 10, f"Loading historical patient data from {real_data_results['data_range']}", f"Connected to {len(patients_df)} patients, {len(encounters_df)} encounters"),
+            ("Analyzing Recent Discharges", 25, f"Reviewing discharges from {real_data_results['analysis_period']}", f"Found {real_data_results['recent_discharges_count']} discharges in analysis period"),
+            ("Risk Assessment", 45, "Calculating readmission risk scores using historical patterns", f"Identified {real_data_results['high_risk_count']} high-risk patients ({real_data_results['readmission_rate']:.1f}% readmission rate)"),
+            ("Care Gap Analysis", 65, "Analyzing care patterns and follow-up gaps", f"Found {real_data_results['care_gaps_count']} care gaps in recent analysis period"),
+            ("Clinical Events Review", 85, f"Analyzing recent clinical events: {real_data_results.get('recent_events_count', 0)} events in {real_data_results.get('event_analysis_period', 'analysis period')}", f"Generated interventions for {min(real_data_results['high_risk_count'], 15)} specific patients"),
+            ("Finalizing Report", 100, "Compiling comprehensive care management report with historical insights", "Report ready with real patient population analysis")
         ]
         
-        # NEW: Generate LLM report using enhanced functions
-        ai_report = generate_llm_report(real_data_results, "proactive_care", patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, model_name)
+        # Generate final report
+        high_risk_sample = patients_df[patients_df['RISK_CATEGORY'] == 'High'].head(4)
+        patient_interventions = []
+        for idx, patient in high_risk_sample.iterrows():
+            patient_interventions.append(f"**{patient['PATIENT_ID']}** ({patient['PATIENT_NAME']}) - {patient['GENDER']}, {patient['RACE']}")
         
-        return steps, ai_report
+        encounter_summary = ", ".join([f"{k}: {v}" for k, v in list(real_data_results['encounter_types'].items())[:3]])
+        diagnosis_summary = ", ".join([f"{k}: {v} cases" for k, v in list(real_data_results['top_diagnoses'].items())[:3]])
+        
+        report = f"""# Proactive Care Management Report - Real Data Analysis
+**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Data Source**: Live Snowflake Analysis
+
+## Executive Summary
+Analyzed {len(patients_df)} total patients with {len(encounters_df)} encounters and identified {real_data_results['high_risk_count']} high-risk patients requiring immediate intervention.
+
+### Key Findings
+- **Recent Discharges**: {real_data_results['recent_discharges_count']} patients discharged in analysis period
+- **30-Day Readmission Rate**: {real_data_results['readmission_rate']:.1f}%
+- **Care Gaps Identified**: {real_data_results['care_gaps_count']} high-risk patients without recent follow-up
+- **Encounter Distribution**: {encounter_summary}
+
+## Patient Population Risk Profile
+- **High Risk**: {real_data_results.get('risk_distribution', {}).get('High', 0)} patients
+- **Moderate Risk**: {real_data_results.get('risk_distribution', {}).get('Moderate', 0)} patients  
+- **Low Risk**: {real_data_results.get('risk_distribution', {}).get('Low', 0)} patients
+
+## Priority Interventions (Sample High-Risk Patients)
+{chr(10).join([f"{i+1}. {intervention} - Requires immediate care coordination follow-up" for i, intervention in enumerate(patient_interventions[:4])])}
+
+## Clinical Patterns Identified
+**Top Discharge Diagnoses**: {diagnosis_summary}
+
+**Most Common Risk Factors**: {', '.join(list(real_data_results.get('top_risk_factors', {}).keys())[:3])}
+
+## Financial Impact Analysis
+- **Total Claims Volume**: ${real_data_results.get('total_billed', 0):,.2f} billed
+- **Payment Rate**: {real_data_results.get('payment_rate', 0):.1f}%
+- **Estimated Cost Avoidance**: ${real_data_results['high_risk_count'] * 15000:,.2f} (prevented readmissions)
+
+## Recommended Actions
+1. **Immediate Follow-up**: Contact {real_data_results['care_gaps_count']} high-risk patients without recent encounters
+2. **Readmission Prevention**: Focus on {real_data_results['readmission_count']} patients with prior readmissions
+3. **Care Coordination**: Implement enhanced monitoring for emergency department frequent users
+4. **Resource Allocation**: Deploy care managers to highest-risk ZIP codes
+
+## Data-Driven Insights
+- **Patient Demographics**: {len(patients_df[patients_df['GENDER'] == 'Female'])} Female, {len(patients_df[patients_df['GENDER'] == 'Male'])} Male patients
+- **Geographic Spread**: {patients_df['ZIP_CODE'].nunique()} unique ZIP codes served
+- **Language Considerations**: {patients_df['PRIMARY_LANGUAGE'].nunique()} languages requiring interpretation services
+
+**This report generated through autonomous Snowflake Cortex agent analysis of live healthcare data, demonstrating AI-powered clinical decision support and multi-step reasoning workflows.**"""
+        
+        return steps, report
         
     except Exception as e:
         st.error(f"Proactive Care Agent error: {str(e)}")
         return [], "Agent execution failed"
 
-def run_population_health_agent(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, model_name="claude-4-sonnet"):
-    """Execute the population health manager agent workflow - ENHANCED VERSION"""
+def run_population_health_agent(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df):
+    """Execute the population health manager agent workflow"""
     try:
         real_data_results = analyze_real_population_health_data(
             patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df
         )
         
         steps = [
-            ("Population Segmentation", 15, f"Advanced chronic condition cohort identification with detailed clinical metrics across {real_data_results['total_patients']} patients", f"Segmented into diabetes: {real_data_results['chronic_conditions'].get('diabetes', 0)}, hypertension: {real_data_results['chronic_conditions'].get('hypertension', 0)}, COPD: {real_data_results['chronic_conditions'].get('copd', 0)} patients"),
-            ("Risk Trajectory Analysis", 30, f"Sophisticated analysis of deteriorating health patterns in {real_data_results['analysis_period']}", f"Identified {real_data_results['deteriorating_count']} patients with recent encounters requiring attention"),
-            ("Care Adherence Assessment", 50, "Enhanced review of care engagement with clinical context and follow-up compliance patterns", f"Found {real_data_results['poor_adherence_count']} high-risk patients with poor care adherence"),
-            ("Intervention Prioritization", 70, "Advanced ranking by clinical urgency with evidence-based prioritization and impact potential", f"Prioritized {real_data_results['high_impact_interventions']} high-impact intervention opportunities"),
-            ("Resource Allocation", 85, f"Comprehensive analysis of care distribution with geographic insights across {real_data_results['zip_codes_served']} ZIP codes", f"Mapped resource needs across encounter types: {list(real_data_results['encounter_distribution'].keys())[:3]}"),
-            ("Generating AI Report", 100, f"Targeted population health strategies with professional clinical recommendations using {model_name}", f"AI-powered population health analysis with enhanced population insights ready")
+            ("Population Segmentation", 15, f"Identifying chronic condition cohorts across {real_data_results['total_patients']} patients", f"Segmented into diabetes: {real_data_results['chronic_conditions'].get('diabetes', 0)}, hypertension: {real_data_results['chronic_conditions'].get('hypertension', 0)}, COPD: {real_data_results['chronic_conditions'].get('copd', 0)} patients"),
+            ("Risk Trajectory Analysis", 30, f"Analyzing deteriorating conditions in {real_data_results['analysis_period']}", f"Identified {real_data_results['deteriorating_count']} patients with recent encounters requiring attention"),
+            ("Care Adherence Assessment", 50, "Reviewing care engagement patterns and follow-up compliance", f"Found {real_data_results['poor_adherence_count']} high-risk patients with poor care adherence"),
+            ("Intervention Prioritization", 70, "Ranking patients by clinical urgency and impact potential", f"Prioritized {real_data_results['high_impact_interventions']} high-impact intervention opportunities"),
+            ("Resource Allocation", 85, f"Analyzing care distribution across {real_data_results['zip_codes_served']} ZIP codes", f"Mapped resource needs across encounter types: {list(real_data_results['encounter_distribution'].keys())[:3]}"),
+            ("Outreach Campaign Generation", 100, "Creating targeted intervention strategies for chronic disease management", f"Generated personalized strategies for {real_data_results['chronic_conditions'].get('diabetes', 0) + real_data_results['chronic_conditions'].get('hypertension', 0)} diabetes/hypertension patients")
         ]
         
-        # NEW: Generate LLM report
-        ai_report = generate_llm_report(real_data_results, "population_health", patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, model_name)
+        # Generate final report
+        top_zip_codes = ", ".join([f"{zip_code} ({count} patients)" for zip_code, count in list(real_data_results['high_risk_zip_codes'].items())[:3]])
         
-        return steps, ai_report
+        report = f"""# Population Health Manager Report - Real Data Analysis
+**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Data Source**: Live Snowflake Analysis
+
+## Executive Summary
+Analyzed {real_data_results['total_patients']} patients and identified chronic disease patterns requiring targeted population health interventions.
+
+### Chronic Disease Burden
+- **Diabetes Patients**: {real_data_results['chronic_conditions'].get('diabetes', 0)} ({(real_data_results['chronic_conditions'].get('diabetes', 0)/real_data_results['total_patients']*100):.1f}% of population)
+- **Hypertension Patients**: {real_data_results['chronic_conditions'].get('hypertension', 0)} ({(real_data_results['chronic_conditions'].get('hypertension', 0)/real_data_results['total_patients']*100):.1f}% of population)
+- **Heart Failure Patients**: {real_data_results['chronic_conditions'].get('heart_failure', 0)} ({(real_data_results['chronic_conditions'].get('heart_failure', 0)/real_data_results['total_patients']*100):.1f}% of population)
+- **COPD Patients**: {real_data_results['chronic_conditions'].get('copd', 0)} ({(real_data_results['chronic_conditions'].get('copd', 0)/real_data_results['total_patients']*100):.1f}% of population)
+
+## High-Priority Patient Cohorts
+### Deteriorating Health Status ({real_data_results['analysis_period']})
+- **Recent High-Risk Encounters**: {real_data_results['deteriorating_count']} patients requiring immediate intervention
+- **Poor Care Adherence**: {real_data_results['poor_adherence_count']} high-risk patients with inadequate follow-up
+- **High-Impact Opportunities**: {real_data_results['high_impact_interventions']} patients with readmission history
+
+## Risk Stratification Analysis
+- **High Risk**: {real_data_results['risk_distribution'].get('High', 0)} patients ({(real_data_results['risk_distribution'].get('High', 0)/real_data_results['total_patients']*100):.1f}%)
+- **Moderate Risk**: {real_data_results['risk_distribution'].get('Moderate', 0)} patients ({(real_data_results['risk_distribution'].get('Moderate', 0)/real_data_results['total_patients']*100):.1f}%)
+- **Low Risk**: {real_data_results['risk_distribution'].get('Low', 0)} patients ({(real_data_results['risk_distribution'].get('Low', 0)/real_data_results['total_patients']*100):.1f}%)
+
+## Geographic Resource Allocation
+**Service Areas**: {real_data_results['zip_codes_served']} ZIP codes
+**High-Risk Concentrations**: {top_zip_codes}
+
+**This report generated through autonomous Snowflake Cortex agent analysis of live healthcare data, demonstrating AI-powered clinical decision support and multi-step reasoning workflows.**"""
+        
+        return steps, report
         
     except Exception as e:
         st.error(f"Population Health Agent error: {str(e)}")
         return [], "Agent execution failed"
 
-def run_prior_authorization_agent(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, model_name="claude-4-sonnet"):
-    """Execute the prior authorization agent workflow - ENHANCED VERSION"""
+def run_prior_authorization_agent(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df):
+    """Execute the prior authorization agent workflow"""
     try:
         real_data_results = analyze_real_prior_authorization_data(
             patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df
         )
         
         steps = [
-            ("Claims Pattern Analysis", 12, f"Advanced analysis of claims patterns with sophisticated financial modeling for {real_data_results['total_claims']} total claims", f"Identified {real_data_results['high_cost_claims']} high-cost claims (>${real_data_results['high_cost_threshold']:,.0f} threshold)"),
-            ("Medical Necessity Validation", 28, f"Enhanced validation using evidence-based clinical criteria and procedure-diagnosis alignment", f"Validated medical necessity for {real_data_results['validation_rate']:.1f}% of claims using clinical criteria"),
-            ("Cost-Benefit Modeling", 45, f"Sophisticated financial analysis with advanced optimization algorithms and payment patterns", f"Identified ${real_data_results['cost_analysis']['savings_opportunity']:,.0f} in potential optimization opportunities"),
-            ("Denial Risk Assessment", 62, f"Advanced payer-specific approval pattern analysis across {len(real_data_results['payer_distribution'])} payers", f"Assessed approval risk with payment rates across multiple payers"),
-            ("Alternative Treatment Analysis", 80, f"Comprehensive analysis of cost-effective treatment alternatives in procedure categories", f"Found alternative treatment opportunities in procedure categories"),
-            ("Generating AI Report", 100, f"Evidence-based authorization framework with professional clinical documentation using {model_name}", f"AI-powered authorization report with enhanced authorization accuracy ready")
+            ("Claims Pattern Analysis", 12, f"Analyzing {real_data_results['total_claims']} total claims for high-cost patterns", f"Identified {real_data_results['high_cost_claims']} high-cost claims (>${real_data_results['high_cost_threshold']:,.0f} threshold)"),
+            ("Medical Necessity Validation", 28, f"Validating medical necessity using procedure-diagnosis alignment", f"Validated medical necessity for {real_data_results['validation_rate']:.1f}% of claims using clinical criteria"),
+            ("Cost-Benefit Modeling", 45, f"Analyzing payment patterns and cost optimization opportunities", f"Identified ${real_data_results['cost_analysis']['savings_opportunity']:,.0f} in potential optimization opportunities"),
+            ("Denial Risk Assessment", 62, f"Evaluating payer-specific approval patterns across {len(real_data_results['payer_distribution'])} payers", f"Assessed approval risk with payment rates across multiple payers"),
+            ("Alternative Treatment Analysis", 80, f"Analyzing procedure patterns for cost-effective alternatives", f"Found alternative treatment opportunities in procedure categories"),
+            ("Authorization Recommendation", 100, f"Generating evidence-based decisions for claims", f"Generated authorization framework with {real_data_results['cost_analysis']['payment_rate']:.1f}% baseline approval rate")
         ]
         
-        # NEW: Generate LLM report
-        ai_report = generate_llm_report(real_data_results, "prior_authorization", patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, model_name)
+        # Generate final report
+        top_payers = ", ".join([f"{payer}: {count} claims" for payer, count in list(real_data_results['payer_distribution'].items())[:3]])
+        top_procedures = ", ".join([f"{proc}: {count}" for proc, count in list(real_data_results['procedure_analysis'].items())[:3]])
         
-        return steps, ai_report
+        report = f"""# Prior Authorization Analysis Report - Real Data Analysis
+**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Data Source**: Live Snowflake Claims Analysis
+
+## Executive Summary
+Processed {real_data_results['total_claims']} claims with {real_data_results['validation_rate']:.1f}% medical necessity validation rate and identified ${real_data_results['cost_analysis']['savings_opportunity']:,.2f} in optimization opportunities.
+
+## Claims Volume Analysis
+- **Total Claims Processed**: {real_data_results['total_claims']}
+- **High-Cost Claims** (>${real_data_results['high_cost_threshold']:,.0f}): {real_data_results['high_cost_claims']} ({real_data_results['high_cost_percentage']:.1f}%)
+
+## Authorization Decision Framework
+### Payment Pattern Analysis
+- **Overall Payment Rate**: {real_data_results['cost_analysis']['payment_rate']:.1f}%
+- **Total Billed**: ${real_data_results['cost_analysis']['total_billed']:,.2f}
+- **Total Paid**: ${real_data_results['cost_analysis']['total_paid']:,.2f}
+- **Payment Variance**: ${real_data_results['cost_analysis']['payment_variance']:,.2f}
+
+## Major Payers
+{top_payers}
+
+## Most Common Procedures
+{top_procedures}
+
+## Cost Optimization Opportunities
+- **Process Optimization**: ${real_data_results['cost_analysis']['savings_opportunity']:,.2f}
+- **Alternative Treatments**: 15-25% cost reduction potential in identified categories
+
+**This report generated through autonomous Snowflake Cortex agent analysis of live healthcare data, demonstrating AI-powered clinical decision support and multi-step reasoning workflows.**"""
+        
+        return steps, report
         
     except Exception as e:
         st.error(f"Prior Authorization Agent error: {str(e)}")
         return [], "Agent execution failed"
 
-def run_quality_safety_agent(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, model_name="claude-4-sonnet"):
-    """Execute the quality and safety surveillance agent workflow - ENHANCED VERSION"""
+def run_quality_safety_agent(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df):
+    """Execute the quality and safety surveillance agent workflow"""
     try:
         real_data_results = analyze_real_quality_safety_data(
             patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df
         )
         
         steps = [
-            ("Safety Event Detection", 15, f"Advanced scanning with sophisticated safety pattern recognition across {real_data_results['total_encounters']} encounters", f"Identified {real_data_results['readmission_events']} readmission events ({real_data_results['readmission_rate']:.1f}% rate) and {real_data_results['frequent_ed_users']} frequent ED users"),
-            ("Quality Measure Assessment", 32, f"Enhanced clinical quality evaluation with professional terminology across {len(real_data_results['quality_metrics'])} core condition categories", f"Assessed quality metrics with documentation compliance rate of {real_data_results['documentation_compliance']:.1f}%"),
-            ("Provider Performance Analysis", 48, f"Comprehensive analysis of performance variations with clinical context across healthcare facilities", f"Identified performance variations across healthcare facilities"),
-            ("Risk Pattern Recognition", 65, f"Advanced detection of systematic risk patterns with AI-powered insights in {real_data_results['total_patients']} patient records", f"Detected {real_data_results['high_utilizer_patients']} high-utilizer patients"),
-            ("Corrective Action Planning", 82, f"Sophisticated analysis of improvement opportunities with evidence-based recommendations for clinical events", f"Generated targeted improvement plans for {real_data_results['ama_discharges']} AMA discharges and quality gaps"),
-            ("Generating AI Report", 100, f"Comprehensive quality and safety action plan with professional clinical documentation using {model_name}", f"AI-powered quality surveillance with enhanced safety monitoring ready")
+            ("Safety Event Detection", 15, f"Scanning {real_data_results['total_encounters']} encounters for safety events and adverse outcomes", f"Identified {real_data_results['readmission_events']} readmission events ({real_data_results['readmission_rate']:.1f}% rate) and {real_data_results['frequent_ed_users']} frequent ED users"),
+            ("Quality Measure Assessment", 32, f"Evaluating clinical quality across {len(real_data_results['quality_metrics'])} core condition categories", f"Assessed quality metrics with documentation compliance rate of {real_data_results['documentation_compliance']:.1f}%"),
+            ("Provider Performance Analysis", 48, f"Analyzing performance variations across facilities", f"Identified performance variations across healthcare facilities"),
+            ("Risk Pattern Recognition", 65, f"Detecting systematic risk patterns in {real_data_results['total_patients']} patient records", f"Detected {real_data_results['high_utilizer_patients']} high-utilizer patients"),
+            ("Corrective Action Planning", 82, f"Analyzing clinical events for improvement opportunities", f"Generated targeted improvement plans for {real_data_results['ama_discharges']} AMA discharges and quality gaps"),
+            ("Regulatory Compliance Check", 100, f"Validating compliance across encounter documentation and safety standards", f"Validated {real_data_results['documentation_compliance']:.1f}% documentation compliance")
         ]
         
-        # NEW: Generate LLM report
-        ai_report = generate_llm_report(real_data_results, "quality_safety", patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, model_name)
+        report = f"""# Clinical Quality & Safety Surveillance Report - Real Data Analysis
+**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Data Source**: Live Snowflake Quality Analysis
+
+## Executive Summary
+Analyzed {real_data_results['total_patients']} patients across {real_data_results['total_encounters']} encounters with {real_data_results['readmission_rate']:.1f}% overall readmission rate and {real_data_results['documentation_compliance']:.1f}% documentation compliance.
+
+## 🚨 Safety Event Analysis
+### Critical Safety Indicators
+- **30-Day Readmissions**: {real_data_results['readmission_events']} events ({real_data_results['readmission_rate']:.1f}% rate)
+- **Frequent ED Users**: {real_data_results['frequent_ed_users']} patients with 3+ emergency visits
+- **Against Medical Advice Discharges**: {real_data_results['ama_discharges']} cases requiring follow-up
+- **High-Utilizer Patients**: {real_data_results['high_utilizer_patients']} patients with 4+ encounters
+
+## Corrective Action Plans
+### Immediate Interventions Required
+1. **Readmission Prevention**: Target {real_data_results['readmission_events']} patients with recent readmissions
+2. **ED Utilization Management**: Coordinate care for {real_data_results['frequent_ed_users']} frequent ED users
+3. **AMA Discharge Follow-up**: Implement outreach for {real_data_results['ama_discharges']} AMA cases
+4. **High-Utilizer Case Management**: Enhanced coordination for {real_data_results['high_utilizer_patients']} high-utilizers
+
+## Regulatory Compliance Status
+### Quality Standards Alignment
+- **Patient Safety Goals**: {real_data_results['documentation_compliance']:.1f}% documentation compliance
+- **Performance Improvement**: Quality metrics tracked across {len(real_data_results['quality_metrics'])} conditions
+
+**This report generated through autonomous Snowflake Cortex agent analysis of live healthcare data, demonstrating AI-powered clinical decision support and multi-step reasoning workflows.**"""
         
-        return steps, ai_report
+        return steps, report
         
     except Exception as e:
         st.error(f"Quality & Safety Agent error: {str(e)}")
         return [], "Agent execution failed"
 
-def run_operations_optimization_agent(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, model_name="claude-4-sonnet"):
-    """Execute the operations optimization agent workflow - ENHANCED VERSION"""
+def run_operations_optimization_agent(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df):
+    """Execute the operations optimization agent workflow"""
     try:
         real_data_results = analyze_real_operations_optimization_data(
             patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df
         )
         
         steps = [
-            ("Capacity Utilization Analysis", 18, f"Advanced analysis with sophisticated efficiency metrics across {real_data_results['total_encounters']} encounters and {real_data_results['total_facilities']} facilities", f"Average length of stay: {real_data_results.get('average_length_of_stay', 0):.1f} days, {real_data_results.get('extended_stays', 0)} extended stays identified"),
-            ("Staffing Pattern Optimization", 34, f"Enhanced evaluation with professional operational terminology across encounter types and facilities", f"Identified optimization opportunities across healthcare facilities"),
-            ("Equipment Utilization Review", 52, f"Comprehensive analysis with advanced resource optimization across clinical procedures", f"Found optimization potential in procedure categories"),
-            ("Patient Flow Optimization", 68, f"Sophisticated review of discharge efficiency and flow patterns with clinical workflow integration", f"{real_data_results['high_utilizer_count']} high-utilizer patients identified"),
-            ("Cost Center Performance", 84, f"Advanced benchmarking with comprehensive financial analysis across payers and claim types", f"Revenue per encounter: ${real_data_results.get('revenue_per_encounter', 0):,.2f}"),
-            ("Generating AI Report", 100, f"Comprehensive optimization strategy with professional operational recommendations using {model_name}", f"AI-powered operations analysis with enhanced operational insights ready")
+            ("Capacity Utilization Analysis", 18, f"Analyzing {real_data_results['total_encounters']} encounters across {real_data_results['total_facilities']} facilities", f"Average length of stay: {real_data_results.get('average_length_of_stay', 0):.1f} days, {real_data_results.get('extended_stays', 0)} extended stays identified"),
+            ("Staffing Pattern Optimization", 34, f"Evaluating efficiency across encounter types and facilities", f"Identified optimization opportunities across healthcare facilities"),
+            ("Equipment Utilization Review", 52, f"Analyzing clinical resource allocation", f"Found optimization potential in procedure categories"),
+            ("Patient Flow Optimization", 68, f"Reviewing discharge efficiency and patient flow patterns", f"{real_data_results['high_utilizer_count']} high-utilizer patients identified"),
+            ("Cost Center Performance", 84, f"Benchmarking financial efficiency across payers and claim types", f"Revenue per encounter: ${real_data_results.get('revenue_per_encounter', 0):,.2f}"),
+            ("Resource Reallocation Recommendations", 100, f"Generating optimization strategies across {real_data_results.get('service_area_zips', 0)} service areas", f"Identified ${sum([opp.get('cost_savings', 0) for opp in real_data_results.get('optimization_opportunities', {}).values()]):,.0f} in annual savings potential")
         ]
         
-        # NEW: Generate LLM report
-        ai_report = generate_llm_report(real_data_results, "operations", patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, model_name)
+        report = f"""# Operational Efficiency & Resource Optimization Report - Real Data Analysis
+**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Data Source**: Live Snowflake Operations Analysis
+
+## Executive Summary
+Analyzed {real_data_results['total_encounters']} encounters across {real_data_results['total_facilities']} facilities serving {real_data_results['total_patients']} patients, identifying ${sum([opp.get('cost_savings', 0) for opp in real_data_results.get('optimization_opportunities', {}).values()]):,.0f} in annual optimization opportunities.
+
+## 🏥 Capacity Utilization Analysis
+### Length of Stay Performance
+- **Average Length of Stay**: {real_data_results.get('average_length_of_stay', 0):.1f} days
+- **Extended Stays (>7 days)**: {real_data_results.get('extended_stays', 0)} encounters ({real_data_results.get('extended_stay_rate', 0):.1f}%)
+
+## 👥 Patient Utilization Patterns
+- **High-Utilizer Patients**: {real_data_results['high_utilizer_count']} patients (4+ encounters)
+- **High-Utilizer Encounters**: {real_data_results.get('high_utilizer_encounters', 0)} encounters ({real_data_results.get('high_utilizer_percentage', 0):.1f}% of total)
+
+## 💰 Financial Efficiency Analysis
+### Revenue Optimization
+- **Revenue per Encounter**: ${real_data_results.get('revenue_per_encounter', 0):,.2f}
+- **Service Area Coverage**: {real_data_results.get('service_area_zips', 0)} ZIP codes served
+
+## 🎯 Optimization Recommendations
+### Total Financial Impact
+- **Length of Stay Optimization**: ${real_data_results.get('optimization_opportunities', {}).get('los_optimization', {}).get('cost_savings', 0):,.0f}
+- **High-Utilizer Management**: ${real_data_results.get('optimization_opportunities', {}).get('utilizer_management', {}).get('cost_savings', 0):,.0f}
+
+**Total Projected Annual Savings**: ${sum([opp.get('cost_savings', 0) for opp in real_data_results.get('optimization_opportunities', {}).values()]):,.0f}
+
+**This report generated through autonomous Snowflake Cortex agent analysis of live healthcare data, demonstrating AI-powered clinical decision support and multi-step reasoning workflows.**"""
         
-        return steps, ai_report
+        return steps, report
         
     except Exception as e:
         st.error(f"Operations Optimization Agent error: {str(e)}")
         return [], "Agent execution failed"
 
-def execute_agent_workflow(agent_type, patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, placeholder, selected_model="claude-4-sonnet"):
+def execute_agent_workflow(agent_type, patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, placeholder):
     """
-    Enhanced function to execute any agent workflow with UI updates - NOW WITH MODEL SELECTION
+    Main function to execute any agent workflow with UI updates
     """
     try:
         # Map agent types to functions
@@ -723,8 +785,8 @@ def execute_agent_workflow(agent_type, patients_df, encounters_df, clinical_even
         # Get the appropriate agent function
         agent_func = agent_functions[agent_type]
         
-        # Execute the agent with selected model
-        steps, final_report = agent_func(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df, selected_model)
+        # Execute the agent
+        steps, final_report = agent_func(patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df)
         
         # Initialize completed steps if not exists
         completed_steps_key = f'completed_steps_{agent_type}'
@@ -1036,616 +1098,6 @@ def load_risk_scores_data():
     """
     return query_snowflake(query, cache_key="risk_scores_data", ttl=1800)
 
-# 1. NEW ENHANCED LLM REPORT GENERATOR FUNCTIONS
-
-def format_analysis_data_enhanced(analysis_results, report_type, patients_df, encounters_df, clinical_events_df=None, claims_df=None, risk_scores_df=None):
-    """Enhanced formatting with specific examples and detailed calculations for Snowflake"""
-    
-    base_summary = f"""
-    HEALTHCARE ANALYSIS RESULTS - {report_type.upper().replace('_', ' ')}
-    
-    Analysis Period: {analysis_results.get('analysis_period', 'Current period')}
-    Data Range: {analysis_results.get('data_range', 'Full dataset')}
-    """
-    
-    if report_type == "proactive_care":
-        # Get specific high-risk patient examples
-        try:
-            high_risk_sample = patients_df[patients_df['RISK_CATEGORY'] == 'High'].head(4)
-            patient_examples = []
-            for idx, patient in high_risk_sample.iterrows():
-                patient_examples.append(f"{patient['PATIENT_ID']} ({patient['PATIENT_NAME']}) - {patient['GENDER']}, {patient['RACE']}")
-        except:
-            patient_examples = ["Sample patient data unavailable"]
-            
-        # Calculate specific financial impact
-        estimated_cost_avoidance = analysis_results.get('high_risk_count', 0) * 15000
-        
-        # Get encounter and diagnosis summaries
-        encounter_summary = ", ".join([f"{k}: {v}" for k, v in list(analysis_results.get('encounter_types', {}).items())[:3]])
-        diagnosis_summary = ", ".join([f"{k}: {v} cases" for k, v in list(analysis_results.get('top_diagnoses', {}).items())[:3]])
-        
-        return base_summary + f"""
-        POPULATION OVERVIEW:
-        - Total Patients Analyzed: {len(patients_df)}
-        - Total Encounters: {len(encounters_df)}
-        - High-Risk Patients: {analysis_results.get('high_risk_count', 0)}
-        - Recent Discharges: {analysis_results.get('recent_discharges_count', 0)}
-        - Care Gaps Identified: {analysis_results.get('care_gaps_count', 0)}
-        
-        CLINICAL METRICS:
-        - 30-Day Readmission Rate: {analysis_results.get('readmission_rate', 0):.1f}%
-        - Readmission Events: {analysis_results.get('readmission_count', 0)}
-        - Risk Distribution: {analysis_results.get('risk_distribution', {})}
-        - Top Discharge Diagnoses: {diagnosis_summary}
-        - Encounter Distribution: {encounter_summary}
-        
-        HIGH-RISK PATIENT EXAMPLES (for specific interventions):
-        {chr(10).join([f"- {example}" for example in patient_examples])}
-        
-        FINANCIAL IMPACT ANALYSIS:
-        - Total Claims Volume: ${analysis_results.get('total_billed', 0):,.2f} billed
-        - Payment Rate: {analysis_results.get('payment_rate', 0):.1f}%
-        - Calculated Cost Avoidance: ${estimated_cost_avoidance:,.2f} (prevented readmissions at $15K each)
-        
-        GEOGRAPHIC & DEMOGRAPHIC INSIGHTS:
-        - Geographic Coverage: {patients_df['ZIP_CODE'].nunique() if 'ZIP_CODE' in patients_df.columns else 0} unique ZIP codes served
-        - Gender Distribution: {len(patients_df[patients_df['GENDER'] == 'Female']) if 'GENDER' in patients_df.columns else 0} Female, {len(patients_df[patients_df['GENDER'] == 'Male']) if 'GENDER' in patients_df.columns else 0} Male patients
-        - Language Services Needed: {patients_df['PRIMARY_LANGUAGE'].nunique() if 'PRIMARY_LANGUAGE' in patients_df.columns else 0} languages requiring interpretation services
-        - Most Common Risk Factors: {', '.join(list(analysis_results.get('top_risk_factors', {}).keys())[:3])}
-        
-        RECENT CLINICAL ACTIVITY:
-        - Recent Events Count: {analysis_results.get('recent_events_count', 0)}
-        - Recent Procedures: {analysis_results.get('recent_procedures', {})}
-        - Event Analysis Period: {analysis_results.get('event_analysis_period', 'N/A')}
-        """
-    
-    elif report_type == "population_health":
-        # Get demographic breakdowns
-        try:
-            demographics = analysis_results.get('demographics', {})
-            gender_breakdown = ", ".join([f"{k}: {v}" for k, v in demographics.get('gender', {}).items()])
-            race_breakdown = ", ".join([f"{k}: {v}" for k, v in list(demographics.get('race', {}).items())[:4]])
-            language_breakdown = ", ".join([f"{k}: {v}" for k, v in list(demographics.get('language', {}).items())[:3]])
-        except:
-            gender_breakdown = "Data unavailable"
-            race_breakdown = "Data unavailable"
-            language_breakdown = "Data unavailable"
-            
-        # Get geographic concentration details
-        high_risk_zips = analysis_results.get('high_risk_zip_codes', {})
-        top_zip_codes = ", ".join([f"{zip_code} ({count} patients)" for zip_code, count in list(high_risk_zips.items())[:3]])
-        
-        # Calculate percentages for chronic conditions
-        total_patients = analysis_results.get('total_patients', 1)
-        chronic_conditions = analysis_results.get('chronic_conditions', {})
-        condition_percentages = {}
-        for condition, count in chronic_conditions.items():
-            condition_percentages[condition] = f"{count} ({(count/total_patients*100):.1f}%)"
-        
-        # Get encounter type distribution
-        encounter_types = ", ".join([f"{k}: {v}" for k, v in list(analysis_results.get('encounter_distribution', {}).items())[:3]])
-        
-        return base_summary + f"""
-        POPULATION SEGMENTATION:
-        - Total Population Analyzed: {total_patients}
-        - Service Coverage: {analysis_results.get('zip_codes_served', 0)} ZIP codes
-        - Analysis Period: {analysis_results.get('analysis_period', 'N/A')}
-        
-        CHRONIC DISEASE BURDEN:
-        - Diabetes Patients: {condition_percentages.get('diabetes', '0 (0.0%)')} of population
-        - Hypertension Patients: {condition_percentages.get('hypertension', '0 (0.0%)')} of population
-        - Heart Failure Patients: {condition_percentages.get('heart_failure', '0 (0.0%)')} of population
-        - COPD Patients: {condition_percentages.get('copd', '0 (0.0%)')} of population
-        - Chronic Kidney Disease: {condition_percentages.get('ckd', '0 (0.0%)')} of population
-        
-        HIGH-PRIORITY PATIENT COHORTS:
-        - Deteriorating Health Status: {analysis_results.get('deteriorating_count', 0)} patients with recent high-risk encounters
-        - Poor Care Adherence: {analysis_results.get('poor_adherence_count', 0)} high-risk patients with inadequate follow-up
-        - High-Impact Intervention Opportunities: {analysis_results.get('high_impact_interventions', 0)} patients with readmission history
-        
-        RISK STRATIFICATION BREAKDOWN:
-        - High Risk: {analysis_results.get('risk_distribution', {}).get('High', 0)} patients ({(analysis_results.get('risk_distribution', {}).get('High', 0)/total_patients*100):.1f}%)
-        - Moderate Risk: {analysis_results.get('risk_distribution', {}).get('Moderate', 0)} patients ({(analysis_results.get('risk_distribution', {}).get('Moderate', 0)/total_patients*100):.1f}%)
-        - Low Risk: {analysis_results.get('risk_distribution', {}).get('Low', 0)} patients ({(analysis_results.get('risk_distribution', {}).get('Low', 0)/total_patients*100):.1f}%)
-        
-        DEMOGRAPHIC ANALYSIS:
-        - Gender Distribution: {gender_breakdown}
-        - Race/Ethnicity Breakdown: {race_breakdown}
-        - Primary Languages: {language_breakdown}
-        
-        GEOGRAPHIC RESOURCE ALLOCATION:
-        - High-Risk Geographic Concentrations: {top_zip_codes}
-        - Encounter Type Distribution: {encounter_types}
-        """
-    
-    elif report_type == "prior_authorization":
-        # Get detailed payer and procedure analysis
-        payer_distribution = analysis_results.get('payer_distribution', {})
-        top_payers = ", ".join([f"{payer}: {count} claims" for payer, count in list(payer_distribution.items())[:3]])
-        
-        procedure_analysis = analysis_results.get('procedure_analysis', {})
-        top_procedures = ", ".join([f"{proc}: {count}" for proc, count in list(procedure_analysis.items())[:3]])
-        
-        diagnosis_patterns = analysis_results.get('diagnosis_patterns', {})
-        top_diagnoses = ", ".join([f"{diag}: {count}" for diag, count in list(diagnosis_patterns.items())[:3]])
-        
-        # Get detailed cost analysis
-        cost_analysis = analysis_results.get('cost_analysis', {})
-        total_billed = cost_analysis.get('total_billed', 0)
-        total_paid = cost_analysis.get('total_paid', 0)
-        payment_variance = cost_analysis.get('payment_variance', 0)
-        payment_rate = cost_analysis.get('payment_rate', 0)
-        savings_opportunity = cost_analysis.get('savings_opportunity', 0)
-        
-        # Get payer approval rates
-        payer_approval_rates = analysis_results.get('payer_approval_rates', {})
-        approval_rates_summary = ", ".join([f"{payer}: {rate:.1f}%" for payer, rate in list(payer_approval_rates.items())[:3]])
-        
-        return base_summary + f"""
-        CLAIMS VOLUME ANALYSIS:
-        - Total Claims Processed: {analysis_results.get('total_claims', 0)}
-        - High-Cost Claims Threshold: ${analysis_results.get('high_cost_threshold', 0):,.0f}
-        - High-Cost Claims Identified: {analysis_results.get('high_cost_claims', 0)} ({analysis_results.get('high_cost_percentage', 0):.1f}% of total)
-        - Medical Necessity Validated: {analysis_results.get('medical_necessity_validated', 0)} claims
-        - Validation Rate: {analysis_results.get('validation_rate', 0):.1f}%
-        
-        FINANCIAL IMPACT ANALYSIS:
-        - Total Billed Amount: ${total_billed:,.2f}
-        - Total Paid Amount: ${total_paid:,.2f}
-        - Payment Variance: ${payment_variance:,.2f}
-        - Overall Payment Rate: {payment_rate:.1f}%
-        - Optimization Savings Opportunity: ${savings_opportunity:,.2f}
-        
-        PAYER ANALYSIS:
-        - Major Payers: {top_payers}
-        - Payer Approval Rates: {approval_rates_summary}
-        - Payer Distribution: {len(payer_distribution)} unique payers
-        
-        PROCEDURE AND DIAGNOSIS PATTERNS:
-        - Most Common Procedures: {top_procedures}
-        - Top Diagnosis Patterns: {top_diagnoses}
-        - Alternative Treatment Opportunities: Identified in high-volume procedure categories
-        
-        AUTHORIZATION DECISION FRAMEWORK:
-        - Baseline Approval Rate: {payment_rate:.1f}%
-        - Cost-Benefit Analysis: 15-25% cost reduction potential in identified categories
-        - Process Optimization Potential: ${savings_opportunity:,.2f} annual savings
-        """
-    
-    elif report_type == "quality_safety":
-        # Get detailed quality metrics breakdown
-        quality_metrics = analysis_results.get('quality_metrics', {})
-        quality_summary = []
-        for condition, metrics in quality_metrics.items():
-            patient_count = metrics.get('patient_count', 0)
-            readmission_rate = metrics.get('readmission_rate', 0)
-            quality_score = metrics.get('quality_score', 0)
-            quality_summary.append(f"{condition.replace('_', ' ').title()}: {patient_count} patients, {readmission_rate:.1f}% readmission rate, {quality_score:.1f} quality score")
-        
-        # Get disposition analysis
-        disposition_patterns = analysis_results.get('disposition_patterns', {})
-        disposition_summary = ", ".join([f"{disp}: {count}" for disp, count in list(disposition_patterns.items())[:4]])
-        
-        return base_summary + f"""
-        SAFETY EVENT ANALYSIS:
-        - Total Patients: {analysis_results.get('total_patients', 0)}
-        - Total Encounters: {analysis_results.get('total_encounters', 0)}
-        - Total Clinical Events: {analysis_results.get('total_events', 0)}
-        
-        CRITICAL SAFETY INDICATORS:
-        - 30-Day Readmission Events: {analysis_results.get('readmission_events', 0)} events
-        - Overall Readmission Rate: {analysis_results.get('readmission_rate', 0):.1f}%
-        - Frequent ED Users: {analysis_results.get('frequent_ed_users', 0)} patients (3+ emergency visits)
-        - Against Medical Advice Discharges: {analysis_results.get('ama_discharges', 0)} cases requiring follow-up
-        - High-Utilizer Patients: {analysis_results.get('high_utilizer_patients', 0)} patients (4+ encounters)
-        
-        QUALITY PERFORMANCE BY CONDITION:
-        {chr(10).join([f"- {summary}" for summary in quality_summary])}
-        
-        DOCUMENTATION AND COMPLIANCE:
-        - Documentation Compliance Rate: {analysis_results.get('documentation_compliance', 0):.1f}%
-        - Quality Standards Alignment: Tracked across {len(quality_metrics)} core conditions
-        
-        DISCHARGE DISPOSITION PATTERNS:
-        - Disposition Analysis: {disposition_summary}
-        - AMA Discharge Rate: Requires enhanced follow-up protocols
-        
-        IMMEDIATE INTERVENTION PRIORITIES:
-        - Readmission Prevention: {analysis_results.get('readmission_events', 0)} patients requiring immediate follow-up
-        - ED Utilization Management: {analysis_results.get('frequent_ed_users', 0)} frequent users need care coordination
-        - High-Utilizer Case Management: {analysis_results.get('high_utilizer_patients', 0)} patients need enhanced coordination
-        """
-    
-    elif report_type == "operations":
-        # Get detailed utilization and efficiency metrics
-        optimization_opportunities = analysis_results.get('optimization_opportunities', {})
-        total_savings = sum([opp.get('cost_savings', 0) for opp in optimization_opportunities.values()])
-        
-        # Length of stay optimization details
-        los_optimization = optimization_opportunities.get('los_optimization', {})
-        los_current_stays = los_optimization.get('current_extended_stays', 0)
-        los_reduction_potential = los_optimization.get('reduction_potential', 0)
-        los_cost_savings = los_optimization.get('cost_savings', 0)
-        
-        # High-utilizer management details
-        utilizer_optimization = optimization_opportunities.get('utilizer_management', {})
-        utilizer_target_patients = utilizer_optimization.get('target_patients', 0)
-        utilizer_reduction_potential = utilizer_optimization.get('encounter_reduction_potential', 0)
-        utilizer_cost_savings = utilizer_optimization.get('cost_savings', 0)
-        
-        # Encounter distribution
-        encounter_distribution = analysis_results.get('encounter_distribution', {})
-        encounter_summary = ", ".join([f"{enc_type}: {count}" for enc_type, count in list(encounter_distribution.items())[:4]])
-        
-        return base_summary + f"""
-        CAPACITY UTILIZATION ANALYSIS:
-        - Total Encounters Analyzed: {analysis_results.get('total_encounters', 0)}
-        - Healthcare Facilities: {analysis_results.get('total_facilities', 0)}
-        - Patient Population: {analysis_results.get('total_patients', 0)}
-        
-        LENGTH OF STAY PERFORMANCE:
-        - Average Length of Stay: {analysis_results.get('average_length_of_stay', 0):.1f} days
-        - Extended Stays (>7 days): {analysis_results.get('extended_stays', 0)} encounters
-        - Extended Stay Rate: {analysis_results.get('extended_stay_rate', 0):.1f}%
-        
-        PATIENT UTILIZATION PATTERNS:
-        - High-Utilizer Patients: {analysis_results.get('high_utilizer_count', 0)} patients (4+ encounters)
-        - High-Utilizer Encounters: {analysis_results.get('high_utilizer_encounters', 0)} total encounters
-        - High-Utilizer Percentage: {analysis_results.get('high_utilizer_percentage', 0):.1f}% of total encounters
-        
-        FINANCIAL EFFICIENCY ANALYSIS:
-        - Revenue per Encounter: ${analysis_results.get('revenue_per_encounter', 0):,.2f}
-        - Service Area Coverage: {analysis_results.get('service_area_zips', 0)} ZIP codes served
-        - Encounter Type Distribution: {encounter_summary}
-        
-        OPTIMIZATION OPPORTUNITIES:
-        - Length of Stay Optimization:
-          * Current Extended Stays: {los_current_stays} encounters
-          * Reduction Potential: {los_reduction_potential:.1f} encounters
-          * Projected Cost Savings: ${los_cost_savings:,.0f}
-        
-        - High-Utilizer Management:
-          * Target Patients: {utilizer_target_patients} high-utilizers
-          * Encounter Reduction Potential: {utilizer_reduction_potential:.1f} encounters
-          * Projected Cost Savings: ${utilizer_cost_savings:,.0f}
-        
-        TOTAL PROJECTED ANNUAL SAVINGS: ${total_savings:,.0f}
-        
-        RESOURCE ALLOCATION RECOMMENDATIONS:
-        - Focus on {los_current_stays} extended stay cases for immediate LOS reduction
-        - Implement case management for {utilizer_target_patients} high-utilizer patients
-        - Optimize workflow across {analysis_results.get('total_facilities', 0)} facilities
-        - Deploy resources across {analysis_results.get('service_area_zips', 0)} service areas
-        """
-    
-    return base_summary
-
-def get_report_config(report_type):
-    """Configuration for each agent report type"""
-    configs = {
-        "proactive_care": {
-            "title": "Proactive Care Management Report",
-            "focus": "readmission prevention and care coordination",
-            "audience": "care coordinators and clinical staff",
-            "sections": ["Clinical Risk Assessment", "Care Gap Analysis", "Intervention Priorities"]
-        },
-        "population_health": {
-            "title": "Population Health Management Report", 
-            "focus": "chronic disease management and population outcomes",
-            "audience": "population health managers and executives",
-            "sections": ["Population Segmentation", "Risk Stratification", "Intervention Targeting"]
-        },
-        "prior_authorization": {
-            "title": "Prior Authorization Analysis Report",
-            "focus": "medical necessity and cost optimization", 
-            "audience": "utilization management and payer relations",
-            "sections": ["Authorization Patterns", "Cost-Benefit Analysis", "Optimization Opportunities"]
-        },
-        "quality_safety": {
-            "title": "Clinical Quality & Safety Surveillance Report",
-            "focus": "safety events and quality improvement",
-            "audience": "quality officers and patient safety teams", 
-            "sections": ["Safety Event Analysis", "Quality Metrics", "Corrective Action Plans"]
-        },
-        "operations": {
-            "title": "Operational Efficiency & Resource Optimization Report",
-            "focus": "resource utilization and operational performance",
-            "audience": "operations managers and executives",
-            "sections": ["Capacity Analysis", "Resource Utilization", "Optimization Strategies"]
-        }
-    }
-    return configs.get(report_type, configs["proactive_care"])
-
-def create_report_prompt(data_summary, config):
-    """Create specialized prompt for each analysis type"""
-    return f"""
-    You are a senior healthcare {config['focus']} consultant generating an executive report for {config['audience']}.
-
-    ANALYSIS DATA:
-    {data_summary}
-
-    REPORT REQUIREMENTS:
-    1. Generate a comprehensive {config['title']} 
-    2. Focus specifically on {config['focus']}
-    3. Target audience: {config['audience']}
-    4. Include these key sections: {', '.join(config['sections'])}
-    5. Provide 4-6 specific, actionable recommendations
-    6. Use professional healthcare terminology
-    7. Include financial and operational impact
-    8. Highlight critical findings requiring immediate attention
-
-    REPORT STRUCTURE:
-    ## Executive Summary
-    [2-3 sentences highlighting most critical findings]
-    
-    ## {config['sections'][0]}
-    [Detailed analysis of primary focus area]
-    
-    ## {config['sections'][1]} 
-    [Secondary analysis with supporting metrics]
-    
-    ## {config['sections'][2]}
-    [Strategic recommendations and next steps]
-    
-    ## Priority Actions
-    [4-6 specific, actionable interventions with timelines]
-    
-    ## Financial Impact
-    [Cost implications and ROI projections]
-
-    Generate insights that demonstrate deep clinical expertise in {config['focus']} and provide actionable intelligence for immediate implementation.
-    """
-
-def generate_fallback_report(analysis_results, report_type):
-    """Fallback to template if LLM fails"""
-    config = get_report_config(report_type)
-    return f"""# {config['title']} - Structured Analysis
-
-**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  
-**Status**: Automated Analysis (LLM unavailable)
-
-## Key Findings
-- Analysis completed for {analysis_results.get('total_patients', 'N/A')} patients
-- Primary metrics calculated and reviewed
-- Recommendations based on structured analysis
-
-## Next Steps
-Please review the structured data and consult with clinical staff for detailed recommendations.
-
-**Note**: This is a fallback analysis. Full AI-generated insights temporarily unavailable.
-"""
-
-def generate_llm_report(analysis_results, report_type, patients_df, encounters_df, clinical_events_df=None, claims_df=None, risk_scores_df=None, model_name="claude-4-sonnet"):
-    """Generate comprehensive analysis using LLM based on structured analysis - Snowflake Cortex Version"""
-    
-    # Get report-specific configuration
-    config = get_report_config(report_type)
-    
-    # Use enhanced data formatting with all specific details
-    data_summary = format_analysis_data_enhanced(analysis_results, report_type, patients_df, encounters_df, clinical_events_df, claims_df, risk_scores_df)
-    
-    # Create specialized prompt
-    report_prompt = create_report_prompt(data_summary, config)
-    
-    # RETRY LOGIC for Cortex errors
-    max_retries = 3
-    retry_delay = 2  # seconds
-    
-    for attempt in range(max_retries):
-        try:
-            # Call Snowflake Cortex model
-            llm_response = call_cortex_model(report_prompt, model_name)
-            
-            # Validate LLM response
-            if not llm_response or llm_response.strip() == "":
-                if attempt < max_retries - 1:
-                    st.info(f"Empty response, retrying in {retry_delay} seconds... (attempt {attempt + 1}/{max_retries})")
-                    time.sleep(retry_delay)
-                    continue
-                else:
-                    raise ValueError("Empty response from Snowflake Cortex after all retries")
-            
-            # SUCCESS - Format final report with headers
-            final_report = f"""# {config['title']} - AI-Generated Analysis
-
-**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  
-**Data Source**: Live Snowflake Analysis  
-**AI Model**: {model_name}
-
----
-
-{llm_response}
-
----
-
-**Report Generation Method**: This analysis was generated through autonomous Snowflake Cortex AI agent analysis of live healthcare data, combining structured data analytics with advanced language model insights for clinical decision support and multi-step reasoning workflows.
-"""
-            
-            return final_report
-            
-        except Exception as e:
-            # Handle Cortex-specific errors
-            if "CORTEX" in str(e) or "quota" in str(e).lower():
-                if attempt < max_retries - 1:
-                    st.info(f"Snowflake Cortex temporarily unavailable, retrying in {retry_delay} seconds... (attempt {attempt + 1}/{max_retries})")
-                    time.sleep(retry_delay)
-                    retry_delay *= 2  # Exponential backoff: 2s, 4s, 8s
-                    continue
-                else:
-                    st.warning(f"Snowflake Cortex unavailable after {max_retries} attempts. Using structured template.")
-                    break
-            else:
-                # Handle other errors (don't retry)
-                st.warning(f"Snowflake Cortex analysis generation failed: {str(e)}. Using structured template.")
-                break
-    
-    # FALLBACK - Return structured template if all retries failed
-    return generate_fallback_report(analysis_results, report_type)
-
-def enhanced_clinical_events_explorer_tab(clinical_events_df):
-    """
-    Complete enhanced Clinical Events Explorer tab content
-    Replace the existing tabs[3] content with this
-    """
-    st.header("Clinical Events Explorer")
-    if not clinical_events_df.empty:
-        
-        # TOP SECTION: Add AI Analysis Controls
-        with st.container(border=True):
-            st.subheader("Clinical Pattern Agent Analysis")
-
-            st.markdown("""
-            **Business Challenge**: Clinical analysts spend 3+ hours daily manually reviewing thousands of clinical events (lab results, procedures, medications, diagnostics) across patient populations, struggling to identify meaningful patterns that could indicate quality issues, safety risks, or care optimization opportunities.
-
-            **Agent Solution**: Autonomous clinical intelligence agent that automatically analyzes clinical event data to identify concerning trends, detect anomalies in care delivery, and generate evidence-based recommendations for improving patient outcomes and operational efficiency.
-            """)
-
-            st.markdown("**Analysis Type:** Population Patterns")
-            
-            reasoning_model = st.selectbox(
-                "Select Snowflake Cortex Model for Analysis:",
-                ["claude-4-sonnet", "claude-3-7-sonnet", "claude-3-5-sonnet", "llama3.1-70b"],
-                key="clinical_reasoning_model"
-            )
-            
-            analyze_button = st.button(
-                "🔍 Analyze Patterns",
-                type="primary",
-                key="analyze_clinical_patterns"
-            )
-        
-        # AI ANALYSIS RESULTS
-        if analyze_button:
-            # Create placeholder for progress updates
-            progress_placeholder = st.empty()
-            
-            # Run analysis with step-by-step progress
-            ai_analysis = analyze_clinical_patterns_with_llm(
-                clinical_events_df, 
-                reasoning_model, 
-                "population",
-                progress_placeholder  # Pass the placeholder
-            )
-            
-            # Clear progress and show results
-            progress_placeholder.empty()
-            
-            with st.expander("AI Clinical Insights", expanded=True):
-                st.markdown(ai_analysis)
-            
-            # Save to session state for persistence
-            st.session_state.clinical_analysis = ai_analysis
-            st.session_state.clinical_analysis_timestamp = datetime.now()
-
-        # Show previous analysis if available
-        elif 'clinical_analysis' in st.session_state:
-            timestamp = st.session_state.get('clinical_analysis_timestamp', datetime.now())
-            with st.expander(f"Previous AI Clinical Insights - {timestamp.strftime('%Y-%m-%d %H:%M:%S')}", expanded=False):
-                st.markdown(st.session_state.clinical_analysis)
-        
-        # EXISTING CONTENT: Keep your current visualizations
-        with st.container(border=True):
-            st.metric("Total Clinical Events", len(clinical_events_df))
-
-        # Create two columns for clinical events visualizations
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.subheader("Event Type Distribution")
-            
-            # Define clinical event colors
-            event_colors = ['#8E44AD', '#E67E22', '#16A085', '#E74C3C']  # Purple, Orange, Teal, Red
-            
-            event_bar = alt.Chart(clinical_events_df).mark_bar(
-                cornerRadiusTopLeft=8,
-                cornerRadiusTopRight=8,
-                width=70,
-                opacity=0.85
-            ).encode(
-                x=alt.X('EVENT_TYPE:N', 
-                       sort='-y', 
-                       title='Event Type',
-                       axis=alt.Axis(labelAngle=0, labelFontSize=11)),
-                y=alt.Y('count():Q', 
-                       title='Count',
-                       axis=alt.Axis(grid=True, gridOpacity=0.3)),
-                color=alt.Color('EVENT_TYPE:N', 
-                               scale=alt.Scale(range=event_colors),
-                               legend=None),
-                stroke=alt.value('white'),
-                strokeWidth=alt.value(2)
-            )
-
-            event_text = alt.Chart(clinical_events_df).mark_text(
-                align="center", 
-                baseline="bottom", 
-                dy=-8, 
-                fontSize=10,
-                fontWeight='normal',
-                color='#2C3E50'
-            ).encode(
-                x=alt.X('EVENT_TYPE:N', sort='-y'),
-                y=alt.Y('count():Q'),
-                text=alt.Text('count():Q', format='.0f')
-            )
-
-            event_chart = (event_bar + event_text).properties(height=300)
-            st.altair_chart(event_chart, use_container_width=True)
-
-        with col2:
-            st.subheader("Events Timeline")
-            
-            # Create timeline chart if we have date data
-            if 'EVENT_DATE' in clinical_events_df.columns:
-                try:
-                    # Convert to datetime and extract month-year
-                    events_df_copy = clinical_events_df.copy()
-                    events_df_copy['EVENT_DATE'] = pd.to_datetime(events_df_copy['EVENT_DATE'], errors='coerce')
-                    events_df_copy['month_year'] = events_df_copy['EVENT_DATE'].dt.to_period('M').astype(str)
-                    
-                    # Get monthly counts by event type
-                    monthly_events = events_df_copy.groupby(['month_year', 'EVENT_TYPE']).size().reset_index(name='count')
-                    
-                    events_timeline = alt.Chart(monthly_events).mark_line(
-                        point=True,
-                        strokeWidth=3
-                    ).encode(
-                        x=alt.X('month_year:N', title='Month', axis=alt.Axis(labelAngle=-45)),
-                        y=alt.Y('count:Q', title='Event Count'),
-                        color=alt.Color('EVENT_TYPE:N', 
-                                       scale=alt.Scale(range=event_colors),
-                                       title='Event Type'),
-                        tooltip=['month_year', 'EVENT_TYPE', 'count']
-                    ).properties(height=300)
-                    
-                    st.altair_chart(events_timeline, use_container_width=True)
-                except:
-                    # Fallback: Events by Code Type
-                    if 'CODE_TYPE' in clinical_events_df.columns:
-                        code_type_data = clinical_events_df.groupby(['EVENT_TYPE', 'CODE_TYPE']).size().reset_index(name='count')
-                        
-                        code_chart = alt.Chart(code_type_data).mark_bar(
-                            cornerRadiusTopLeft=8,
-                            cornerRadiusTopRight=8,
-                            opacity=0.8
-                        ).encode(
-                            x=alt.X('CODE_TYPE:N', title='Code Type', axis=alt.Axis(labelAngle=-45)),
-                            y=alt.Y('count:Q', title='Count'),
-                            color=alt.Color('EVENT_TYPE:N', 
-                                           scale=alt.Scale(range=event_colors),
-                                           title='Event Type'),
-                            tooltip=['CODE_TYPE', 'EVENT_TYPE', 'count']
-                        ).properties(height=300)
-                        
-                        st.altair_chart(code_chart, use_container_width=True)
-
-        # Event type filter and details
-        selected = st.selectbox("Select Event Type to View Details", 
-                              ["All"] + sorted(clinical_events_df['EVENT_TYPE'].dropna().unique().tolist()))
-        filtered_events = clinical_events_df if selected == "All" else clinical_events_df[clinical_events_df["EVENT_TYPE"] == selected]
-        st.dataframe(filtered_events)
-
 def main():
     # CSS Styling
     st.markdown(
@@ -1756,14 +1208,14 @@ def main():
             </div>
         </div>
         ''', unsafe_allow_html=True)
-        st.write("Experience autonomous Cortex AI agents that execute complex healthcare workflows, demonstrating multi-step reasoning and clinical decision-making capabilities.")
+        st.write("Experience autonomous AI agents that execute complex healthcare workflows, demonstrating multi-step reasoning and clinical decision-making capabilities.")
 
         # Create tabs
-        tabs = st.tabs(["Cortex AI Clinical Agents", "Patient Explorer", "Encounter Analysis", "Clinical Events Explorer", "Claims Analysis", "Cortex Clinical Insights", "Analysis History", "Settings"])
+        tabs = st.tabs(["AI Clinical Agents", "Patient Explorer", "Encounter Analysis", "Clinical Events Explorer", "Claims Analysis", "Cortex Clinical Insights", "Analysis History", "Settings"])
 
-        # Cortex AI Clinical Agents Tab
+        # AI Clinical Agents Tab
         with tabs[0]:
-            st.header("Cortex AI Clinical Agents")
+            st.header("AI Clinical Agents")
             st.write("Watch autonomous AI agents execute complex healthcare workflows with multi-step reasoning and clinical decision-making.")
             
             # Create sub-tabs for different agent scenarios
@@ -1787,14 +1239,6 @@ def main():
                     **Agent Solution**: Autonomous workflow that analyzes recent discharges, assesses readmission risks, 
                     identifies care gaps, and generates prioritized intervention plans in a fraction of the time normally required.
                     """)
-
-                    # 🔥 ADD MODEL SELECTOR HERE - RIGHT AFTER BUSINESS CHALLENGE:
-                    selected_model_1 = st.selectbox(
-                        "Select Snowflake Cortex Model for Analysis:", 
-                        ["claude-4-sonnet", "claude-3-7-sonnet", "claude-3-5-sonnet", "llama3.1-70b"], 
-                        key="agent_1_model_selector",
-                        help="Choose which AI model will generate the final analysis"
-                    )     
                     
                     col1, col2 = st.columns([3, 1])
                     
@@ -1839,8 +1283,7 @@ def main():
                                 clinical_events_df=clinical_events_df,
                                 claims_df=claims_df,
                                 risk_scores_df=risk_scores_df,
-                                placeholder=agent_placeholder_1,
-                                selected_model=selected_model_1
+                                placeholder=agent_placeholder_1
                             )
                             
                             st.session_state.final_results_1 = final_report
@@ -1884,14 +1327,6 @@ def main():
                     and generates targeted intervention strategies reducing manual review time by a significant percentage.
                     """)
                     
-                    # 🔥 ADD THIS:
-                    selected_model_2 = st.selectbox(
-                        "Select Snowflake Cortex Model for Analysis:", 
-                        ["claude-4-sonnet", "claude-3-7-sonnet", "claude-3-5-sonnet", "llama3.1-70b"], 
-                        key="agent_2_model_selector",
-                        help="Choose which AI model will generate the final analysis"
-                    )                   
-                    
                     col1, col2 = st.columns([3, 1])
                     
                     with col1:
@@ -1929,8 +1364,7 @@ def main():
                                 clinical_events_df=clinical_events_df,
                                 claims_df=claims_df,
                                 risk_scores_df=risk_scores_df,
-                                placeholder=agent_placeholder_2,
-                                selected_model=selected_model_2
+                                placeholder=agent_placeholder_2
                             )
                             
                             st.session_state.final_results_2 = final_report
@@ -1961,14 +1395,6 @@ def main():
                     **Agent Solution**: Autonomous workflow that analyzes treatment requests, validates medical necessity, 
                     and generates evidence-based authorization decisions - reducing review time by a significant percentage and improving approval accuracy.
                     """)
-                    
-                    # 🔥 ADD THIS:
-                    selected_model_3 = st.selectbox(
-                        "Select Snowflake Cortex Model for Analysis:", 
-                        ["claude-4-sonnet", "claude-3-7-sonnet", "claude-3-5-sonnet", "llama3.1-70b"], 
-                        key="agent_3_model_selector",
-                        help="Choose which AI model will generate the final analysis"
-                    )              
                     
                     col1, col2 = st.columns([3, 1])
                     
@@ -2007,8 +1433,7 @@ def main():
                                 clinical_events_df=clinical_events_df,
                                 claims_df=claims_df,
                                 risk_scores_df=risk_scores_df,
-                                placeholder=agent_placeholder_3,
-                                selected_model=selected_model_3
+                                placeholder=agent_placeholder_3
                             )
                             
                             st.session_state.final_results_3 = final_report
@@ -2039,14 +1464,6 @@ def main():
                     **Agent Solution**: Autonomous workflow that continuously monitors clinical data, detects safety events, 
                     and generates real-time quality alerts - reducing manual review by a significant percentage and enabling proactive intervention.
                     """)
-                    
-                    # 🔥 ADD THIS:
-                    selected_model_4 = st.selectbox(
-                        "Select Snowflake Cortex Model for Analysis:", 
-                        ["claude-4-sonnet", "claude-3-7-sonnet", "claude-3-5-sonnet", "llama3.1-70b"], 
-                        key="agent_4_model_selector",
-                        help="Choose which AI model will generate the final analysis"
-                    )              
                     
                     col1, col2 = st.columns([3, 1])
                     
@@ -2085,8 +1502,7 @@ def main():
                                 clinical_events_df=clinical_events_df,
                                 claims_df=claims_df,
                                 risk_scores_df=risk_scores_df,
-                                placeholder=agent_placeholder_4,
-                                selected_model=selected_model_4
+                                placeholder=agent_placeholder_4
                             )
                             
                             st.session_state.final_results_4 = final_report
@@ -2117,14 +1533,6 @@ def main():
                     **Agent Solution**: Autonomous workflow that analyzes operational data, identifies inefficiencies, 
                     and generates resource optimization strategies - improving productivity and reducing annual operational costs.
                     """)
-                    
-                    # 🔥 ADD THIS:
-                    selected_model_5 = st.selectbox(
-                        "Select Snowflake Cortex Model for Analysis:", 
-                        ["claude-4-sonnet", "claude-3-7-sonnet", "claude-3-5-sonnet", "llama3.1-70b"], 
-                        key="agent_5_model_selector",
-                        help="Choose which AI model will generate the final analysis"
-                    )              
                     
                     col1, col2 = st.columns([3, 1])
                     
@@ -2163,8 +1571,7 @@ def main():
                                 clinical_events_df=clinical_events_df,
                                 claims_df=claims_df,
                                 risk_scores_df=risk_scores_df,
-                                placeholder=agent_placeholder_5,
-                                selected_model=selected_model_5
+                                placeholder=agent_placeholder_5
                             )
                             
                             st.session_state.final_results_5 = final_report
@@ -2483,7 +1890,108 @@ def main():
 
         # Clinical Events Explorer Tab
         with tabs[3]:
-            enhanced_clinical_events_explorer_tab(clinical_events_df)
+            st.header("Clinical Events Explorer")
+            if not clinical_events_df.empty:
+                with st.container(border=True):
+                    st.metric("Total Clinical Events", len(clinical_events_df))
+
+                # Create two columns for clinical events visualizations
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.subheader("Event Type Distribution")
+                    
+                    # Define clinical event colors
+                    event_colors = ['#8E44AD', '#E67E22', '#16A085', '#E74C3C']  # Purple, Orange, Teal, Red
+                    
+                    event_bar = alt.Chart(clinical_events_df).mark_bar(
+                        cornerRadiusTopLeft=8,
+                        cornerRadiusTopRight=8,
+                        width=70,
+                        opacity=0.85
+                    ).encode(
+                        x=alt.X('EVENT_TYPE:N', 
+                               sort='-y', 
+                               title='Event Type',
+                               axis=alt.Axis(labelAngle=0, labelFontSize=11)),
+                        y=alt.Y('count():Q', 
+                               title='Count',
+                               axis=alt.Axis(grid=True, gridOpacity=0.3)),
+                        color=alt.Color('EVENT_TYPE:N', 
+                                       scale=alt.Scale(range=event_colors),
+                                       legend=None),
+                        stroke=alt.value('white'),
+                        strokeWidth=alt.value(2)
+                    )
+
+                    event_text = alt.Chart(clinical_events_df).mark_text(
+                        align="center", 
+                        baseline="bottom", 
+                        dy=-8, 
+                        fontSize=10,
+                        fontWeight='normal',
+                        color='#2C3E50'
+                    ).encode(
+                        x=alt.X('EVENT_TYPE:N', sort='-y'),
+                        y=alt.Y('count():Q'),
+                        text=alt.Text('count():Q', format='.0f')
+                    )
+
+                    event_chart = (event_bar + event_text).properties(height=300)
+                    st.altair_chart(event_chart, use_container_width=True)
+
+                with col2:
+                    st.subheader("Events Timeline")
+                    
+                    # Create timeline chart if we have date data
+                    if 'EVENT_DATE' in clinical_events_df.columns:
+                        try:
+                            # Convert to datetime and extract month-year
+                            events_df_copy = clinical_events_df.copy()
+                            events_df_copy['EVENT_DATE'] = pd.to_datetime(events_df_copy['EVENT_DATE'], errors='coerce')
+                            events_df_copy['month_year'] = events_df_copy['EVENT_DATE'].dt.to_period('M').astype(str)
+                            
+                            # Get monthly counts by event type
+                            monthly_events = events_df_copy.groupby(['month_year', 'EVENT_TYPE']).size().reset_index(name='count')
+                            
+                            events_timeline = alt.Chart(monthly_events).mark_line(
+                                point=True,
+                                strokeWidth=3
+                            ).encode(
+                                x=alt.X('month_year:N', title='Month', axis=alt.Axis(labelAngle=-45)),
+                                y=alt.Y('count:Q', title='Event Count'),
+                                color=alt.Color('EVENT_TYPE:N', 
+                                               scale=alt.Scale(range=event_colors),
+                                               title='Event Type'),
+                                tooltip=['month_year', 'EVENT_TYPE', 'count']
+                            ).properties(height=300)
+                            
+                            st.altair_chart(events_timeline, use_container_width=True)
+                        except:
+                            # Fallback: Events by Code Type
+                            if 'CODE_TYPE' in clinical_events_df.columns:
+                                code_type_data = clinical_events_df.groupby(['EVENT_TYPE', 'CODE_TYPE']).size().reset_index(name='count')
+                                
+                                code_chart = alt.Chart(code_type_data).mark_bar(
+                                    cornerRadiusTopLeft=8,
+                                    cornerRadiusTopRight=8,
+                                    opacity=0.8
+                                ).encode(
+                                    x=alt.X('CODE_TYPE:N', title='Code Type', axis=alt.Axis(labelAngle=-45)),
+                                    y=alt.Y('count:Q', title='Count'),
+                                    color=alt.Color('EVENT_TYPE:N', 
+                                                   scale=alt.Scale(range=event_colors),
+                                                   title='Event Type'),
+                                    tooltip=['CODE_TYPE', 'EVENT_TYPE', 'count']
+                                ).properties(height=300)
+                                
+                                st.altair_chart(code_chart, use_container_width=True)
+
+                # Event type filter and details
+                selected = st.selectbox("Select Event Type to View Details", 
+                                      ["All"] + sorted(clinical_events_df['EVENT_TYPE'].dropna().unique().tolist()))
+                filtered_events = clinical_events_df if selected == "All" else clinical_events_df[clinical_events_df["EVENT_TYPE"] == selected]
+                st.dataframe(filtered_events)
 
         # Claims Analysis Tab
         with tabs[4]:

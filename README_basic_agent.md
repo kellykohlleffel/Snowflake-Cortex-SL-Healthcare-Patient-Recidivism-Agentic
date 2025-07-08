@@ -5,7 +5,6 @@
 - [🤖 AI Clinical Agents - Autonomous Healthcare Workflows](#-ai-clinical-agents---autonomous-healthcare-workflows)
 - [Agent Workflow Architecture](#agent-workflow-architecture)
 - [Features](#features)
-- [🔥 Latest Enhancements](#-latest-enhancements)
 - [Architecture](#architecture)
 - [Prerequisites](#prerequisites)
 - [Setup and Installation](#setup-and-installation)
@@ -24,7 +23,7 @@ The Healthcare AI Agents - Patient Recidivism Data App is a comprehensive analyt
 The app addresses critical healthcare challenges:
 - **Predicting 30-day hospital readmission risk** using AI-driven analysis
 - **Identifying care gaps** and coordination failures across patient journeys
-- **Analyzing clinical event patterns** and patient care burden with autonomous AI insights
+- **Analyzing clinical event patterns** and patient care burden
 - **Assessing financial risk** and cost impact across patient populations
 - **Tracking risk score trajectories** over time with predictive analytics
 - **🤖 Autonomous clinical workflow execution** through specialized AI agents
@@ -40,7 +39,6 @@ The application features **five specialized autonomous AI agents**, each designe
 - **Multi-Step Reasoning**: Complex analytical workflows that pass data and insights between processing stages
 - **Professional Output**: Structured clinical reports ready for healthcare professional use
 - **Real-Time Data Integration**: Live analysis of Snowflake healthcare datasets
-- **🔥 Enhanced Clinical Pattern Recognition**: AI-powered analysis of clinical events with step-by-step progress tracking
 
 ### Agent Workflow Orchestration: "Passing of the Baton"
 
@@ -274,8 +272,12 @@ Each agent follows a standardized **6-phase execution pipeline**:
 - **Professional Clinical Reports**: Enterprise-ready documentation with actionable insights
 - **Zero-Touch Operation**: Point-and-click interface requiring no technical expertise
 - **Agent Performance Monitoring**: Execution tracking, metrics, and optimization insights
-- **🔥 Enhanced Agent Status Management**: Improved start/stop controls with visual status indicators
-- **🔥 Model Selection**: Choose from multiple Snowflake Cortex models for each agent
+
+![Proactive Care Management Agent](images/proactive_care_mgmt_agent.png)
+![Population Health Manager Agent](images/population_health_manager_agent.png)
+![Prior Authorization Agent](images/prior_authorization_agent.png)
+![Quality and Safety Agent](images/quality_and_safety_agent.png)
+![Operations Optimization Agent](images/operations_optimization_agent.png)
 
 ### 🏥 Patient Explorer
 - **Interactive Risk Distribution**: Full-width horizontal bar charts with healthcare color coding
@@ -284,23 +286,25 @@ Each agent follows a standardized **6-phase execution pipeline**:
 - **Advanced Filtering**: Multi-dimensional filtering by risk category, gender, race, and language
 - **Real-time Updates**: All visualizations update dynamically based on selected filters
 
-### 📊 Encounter Analysis
+![Patient Explorer](images/patient_explorer.png)
+
+### Encounter Analysis
 - **Readmission Tracking**: 30-day readmission rate monitoring with trend analysis
 - **Encounter Distribution**: Visual breakdown of emergency, inpatient, and outpatient visits
 - **Monthly Trends**: Time-series analysis of encounter patterns
 - **Interactive Visualizations**: Hover tooltips and detailed breakdowns
 
-### 🔬 Clinical Events Explorer
-- **🔥 Enhanced AI Pattern Analysis**: Autonomous clinical intelligence agent for analyzing clinical event data
-- **🔥 Step-by-Step Progress Tracking**: Real-time progress updates during clinical pattern analysis
-- **🔥 AI Clinical Insights**: Population-level pattern recognition with concerning trends identification
-- **🔥 Model Selection**: Choose from multiple Cortex models for clinical reasoning
+![Encounter Analysis](images/encounter_analysis.png)
+
+### Clinical Events Explorer
 - **Event Type Analysis**: Distribution of diagnoses, procedures, medications, and lab results
 - **Timeline Visualization**: Monthly event trends by type
 - **Event Filtering**: Detailed examination by event category
 - **Comprehensive Tracking**: Full clinical event history and patterns
 
-### 💰 Claims Analysis
+![Clinical Events Explorer](images/clinical_events_explorer.png)
+
+### Claims Analysis
 - **4-Metric Financial Dashboard**: 
   - Total Claims volume
   - Total Billed Amount
@@ -309,6 +313,8 @@ Each agent follows a standardized **6-phase execution pipeline**:
 - **Claims Distribution**: Horizontal bar chart showing professional vs institutional claims
 - **Payment Efficiency**: Stacked bar chart with paid/unpaid amounts and payment rates
 - **Financial Analytics**: Revenue analysis and cost tracking
+
+![Claims Analysis](images/claims_analysis.png)
 
 ### 🤖 Snowflake Cortex Clinical Insights
 
@@ -352,77 +358,28 @@ Each micro application operates like a specialized clinical tool:
 4. **Clinical Event Burden Review**
 5. **Risk Score Trajectory Analysis**
 
+![Clinical Insights](images/clinical_insights.png)
+
 ### 📈 Analysis History
 - **Complete Audit Trail**: Track all generated clinical insights with timestamps
 - **Organized Display**: Expandable entries with patient, model, and analysis type
 - **Remove Capability**: Clean up analysis history as needed
 - **Searchable Archive**: Review historical insights and decisions
 
+![Analysis History](images/analysis_history.png)
+
 ### ⚙️ Settings & Administration
-- **🔥 Enhanced Agent Configuration**: Configure autonomous agent parameters with detailed thresholds
-- **🔥 Data Quality Monitoring**: Real-time data quality assessment across all healthcare tables
-- **🔥 Agent Performance Monitoring**: Comprehensive tracking of autonomous agent execution metrics
-- **🔥 Report Export & Management**: Export agent reports and analysis history in multiple formats
 - **6-Card Data Overview**: 3x2 grid showing comprehensive data statistics
+- **🤖 Agent Configuration**: Configure autonomous agent parameters
+- **🔍 Data Quality Monitoring**: Real-time data quality assessment
+- **📊 Agent Performance Monitoring**: Track autonomous agent execution
 - **Snowflake Integration**: Real-time connection to healthcare datasets
 - **Model Management**: Primary/Secondary model configuration and testing
 - **Cache Management**: Data cache and analysis history controls
-- **🔥 Application Maintenance**: Table schema inspector with sample data preview
+- **📋 Report Export & Management**: Export agent reports and analysis history
 
-## 🔥 Latest Enhancements
-
-### New AI Clinical Pattern Analysis in Clinical Events Explorer
-
-**🤖 Clinical Pattern Agent Analysis**
-- **Autonomous Clinical Intelligence**: AI agent that automatically analyzes clinical event data
-- **Population-Level Pattern Recognition**: Identifies concerning trends and quality issues
-- **Step-by-Step Progress Tracking**: Real-time updates during analysis execution
-- **Evidence-Based Recommendations**: Generates specific interventions for improving outcomes
-- **Model Selection**: Choose from multiple Snowflake Cortex models for analysis
-- **Persistent Results**: Previous analysis stored with timestamps for reference
-
-**Business Challenge Addressed**: Clinical analysts spending 3+ hours daily manually reviewing thousands of clinical events across patient populations.
-
-**Agent Solution**: Autonomous clinical intelligence that identifies concerning trends, detects anomalies, and generates evidence-based recommendations.
-
-### Enhanced Agent Execution with Visual Status Management
-
-**🔥 Improved Agent Controls**
-- **Visual Status Indicators**: Clear "✅ Active" and "⏸ Ready" status displays
-- **Start/Stop Agent Management**: Reliable agent execution control with proper state management
-- **Previous Results Display**: Shows completed agent steps and final reports from previous runs
-- **Model Selection per Agent**: Choose specific Cortex models for each agent type
-- **Enhanced Error Handling**: Better error recovery and user feedback
-
-### Advanced Settings and Monitoring Dashboard
-
-**🔥 Agent Configuration Section**
-- **Analysis Time Windows**: Configure recent data periods and clinical event analysis windows
-- **Performance Thresholds**: Set high-utilizer criteria, extended stay definitions, and quality targets
-- **Configuration Persistence**: Save agent settings for consistent performance
-
-**🔥 Data Quality Monitoring**
-- **Real-Time Quality Checks**: Analyze data completeness across all healthcare tables
-- **Quality Metrics**: Track missing data, completeness scores, and data integrity
-- **Visual Quality Dashboard**: Color-coded metrics for quick assessment
-
-**🔥 Agent Performance Monitoring**
-- **Execution History**: Track total agent runs across all five scenarios
-- **Usage Analytics**: Monitor most popular agents and execution patterns
-- **Performance Metrics**: Track agent completion rates and execution times
-
-**🔥 Report Export & Management**
-- **Analysis History Export**: Export clinical insights to CSV format
-- **Agent Reports Export**: Download combined agent reports in Markdown format
-- **Comprehensive Documentation**: Professional reports ready for clinical workflows
-
-### Application Maintenance and Schema Inspection
-
-**🔥 Table Schema Inspector**
-- **Sample Data Preview**: View sample records from any healthcare table
-- **Column Information**: Display Snowflake data types and schema details
-- **Data Validation**: Verify table structure and data availability
-- **Troubleshooting Support**: Debug data issues and connectivity problems
+![Settings](images/settings.png)
+![Agent Settings](images/agent_settings.png)
 
 ## Architecture
 
@@ -568,16 +525,15 @@ No additional package installations required!
 4. **Run the application**
 
 ### AI Agent Execution
-1. **Navigate to "Cortex AI Clinical Agents" tab**
+1. **Navigate to "AI Clinical Agents" tab**
 2. **Select desired healthcare scenario**:
    - 🏥 Proactive Care Management
    - 👥 Population Health Manager  
    - 💰 Prior Authorization
    - 🛡️ Quality & Safety
    - ⚙️ Operations Optimization
-3. **Choose Snowflake Cortex Model** for analysis
-4. **Click "🚀 Start [Agent Name] Agent"**
-5. **Watch autonomous execution** with real-time progress updates:
+3. **Click "🚀 Start [Agent Name] Agent"**
+4. **Watch autonomous execution** with real-time progress updates:
    ```
    🔄 Agent Running...
    ⏹ Stop Agent
@@ -586,15 +542,7 @@ No additional package installations required!
    Step Progress: [▓▓▓▓▓▓▓░░░] 70%
    Current Step: Risk Pattern Recognition
    ```
-6. **Review generated clinical report** with actionable insights
-
-### Clinical Events Pattern Analysis
-1. **Navigate to "Clinical Events Explorer" tab**
-2. **View event type distribution and timeline**
-3. **Click "🔍 Analyze Patterns"** for AI-powered insights
-4. **Select Snowflake Cortex Model** for analysis
-5. **Watch step-by-step progress** with real-time updates
-6. **Review AI Clinical Insights** with evidence-based recommendations
+5. **Review generated clinical report** with actionable insights
 
 ### Production Usage
 - **Share application** with healthcare team members
@@ -655,19 +603,6 @@ _FIVETRAN_SYNCED   TIMESTAMP_TZ -- Last sync timestamp
 _FIVETRAN_DELETED  BOOLEAN    -- Deletion flag
 ```
 
-#### Risk Scores Table (`risk_scores`)
-```sql
-RISK_ID            VARCHAR    -- Unique risk assessment identifier
-PATIENT_ID         VARCHAR    -- Foreign key to patients
-PATIENT_NAME       VARCHAR    -- Patient name
-ASSESSMENT_DATE    VARCHAR    -- Date of risk assessment
-RISK_SCORE         NUMBER     -- Numerical risk score (0-100)
-RISK_LEVEL         VARCHAR    -- Low, Moderate, High
-KEY_RISK_FACTORS   VARCHAR    -- Contributing risk factors
-_FIVETRAN_SYNCED   TIMESTAMP_TZ -- Last sync timestamp
-_FIVETRAN_DELETED  BOOLEAN    -- Deletion flag
-```
-
 #### Encounters Table (`encounters`)
 ```sql
 ENCOUNTER_ID              VARCHAR    -- Unique encounter identifier
@@ -716,7 +651,20 @@ DIAGNOSIS_CODE     VARCHAR    -- Primary diagnosis code
 BILLED_AMOUNT      NUMBER     -- Amount billed to payer
 PAID_AMOUNT        NUMBER     -- Amount paid by payer
 _FIVETRAN_SYNCED   TIMESTAMP_TZ -- Last sync timestamp
-_FIVETRAN_DELETED BOOLEAN   -- Deletion flag
+_FIVETRAN_DELETED  BOOLEAN    -- Deletion flag
+```
+
+#### Risk Scores Table (`risk_scores`)
+```sql
+RISK_ID            VARCHAR    -- Unique risk assessment identifier
+PATIENT_ID         VARCHAR    -- Foreign key to patients
+PATIENT_NAME       VARCHAR    -- Patient name
+ASSESSMENT_DATE    VARCHAR    -- Date of risk assessment
+RISK_SCORE         NUMBER     -- Numerical risk score (0-100)
+RISK_LEVEL         VARCHAR    -- Low, Moderate, High
+KEY_RISK_FACTORS   VARCHAR    -- Contributing risk factors
+_FIVETRAN_SYNCED   TIMESTAMP_TZ -- Last sync timestamp
+_FIVETRAN_DELETED  BOOLEAN    -- Deletion flag
 ```
 
 ## Troubleshooting
@@ -752,26 +700,6 @@ Error: Failed to generate clinical report or incomplete analysis
 3. **Review Agent Configuration**: Adjust thresholds in Settings → Agent Configuration
 4. **Manual Retry**: Stop and restart agent execution
 5. **Export Partial Results**: Use analysis history to recover partial insights
-
-### Clinical Events Explorer Issues
-
-#### Clinical Pattern Analysis Failures
-```bash
-Error: Clinical pattern analysis could not be completed
-```
-
-**Solutions:**
-1. **Verify Clinical Events Data**: Ensure clinical_events table has sufficient data
-2. **Check Model Selection**: Try different Cortex models for analysis
-3. **Review Event Type Distribution**: Verify event types are properly populated
-4. **Clear Previous Analysis**: Remove cached analysis results
-5. **Restart Pattern Analysis**: Click "🔍 Analyze Patterns" again
-
-#### Missing Clinical Insights
-- **Check Previous Analysis**: Review stored clinical analysis in session state
-- **Verify Model Access**: Ensure selected Cortex model is available
-- **Review Progress Updates**: Monitor step-by-step progress for failures
-- **Check Event Data Quality**: Verify EVENT_TYPE and CODE_VALUE columns are populated
 
 ### Snowflake Connectivity Issues
 
@@ -868,41 +796,6 @@ Error: get_active_session() failed
 4. **Verify role permissions** for session access
 5. **Contact Snowflake support** for session issues
 
-### Enhanced Settings Features Troubleshooting
-
-#### Agent Configuration Issues
-```bash
-Error: Agent configuration save failed
-```
-
-**Solutions:**
-1. **Check parameter ranges**: Ensure values are within valid ranges
-2. **Verify session state**: Clear browser cache if configuration isn't persisting
-3. **Review warehouse permissions**: Ensure adequate resources for configuration
-4. **Restart application**: Refresh Streamlit app if configuration issues persist
-
-#### Data Quality Assessment Failures
-```bash
-Error: Data quality assessment could not complete
-```
-
-**Solutions:**
-1. **Check table permissions**: Verify access to all healthcare tables
-2. **Monitor warehouse resources**: Ensure adequate compute for analysis
-3. **Review table structure**: Use Schema Inspector to verify table schemas
-4. **Check data volume**: Large tables may require warehouse scaling
-
-#### Schema Inspector Issues
-```bash
-Error: Could not retrieve schema information
-```
-
-**Solutions:**
-1. **Verify INFORMATION_SCHEMA access**: Check permissions for schema queries
-2. **Check table names**: Ensure table names match exactly (case-sensitive)
-3. **Review database context**: Confirm correct database and schema selection
-4. **Try alternative tables**: Test with different healthcare tables
-
 ### Performance Monitoring
 
 #### Query Performance
@@ -963,7 +856,6 @@ The application supports multiple Snowflake Cortex models for agent workflows:
 - **Data Processing**: Warehouse auto-scaling for agent performance optimization
 - **Agent Orchestration**: Sequential execution prevents resource conflicts
 - **Cortex Rate Limiting**: Built-in retry logic for model quota management
-- **🔥 Clinical Pattern Analysis**: 30-60 seconds for population-level clinical insights
 
 ## Agent Workflow Examples
 
@@ -1007,34 +899,44 @@ Step 6/6: Report Generation (100% complete)
 ⏱️ Process time: 90 seconds (vs. 2+ hours manual review)
 ```
 
-### Example 2: Clinical Events Pattern Analysis
+### Example 2: Population Health Manager Agent Workflow
 
 ```
-🔬 Clinical Pattern Agent Analysis Starting...
+👥 Population Health Manager Agent Starting...
 
-Step 1/4: Data Analysis Initialization (25% complete)
-├─ 🔍 Loading and processing clinical event data...
-├─ Analyzed 15,847 clinical events across 4 event types
-└─ ✅ Data Analysis Initialization complete
+Step 1/6: Population Segmentation (18% complete)
+├─ Identifying chronic condition cohorts across 2,847 patients
+├─ Segmented diabetes: 312, hypertension: 456, COPD: 89 patients
+└─ ✅ Cohort segmentation complete
 
-Step 2/4: Population Pattern Recognition (50% complete)
-├─ 📊 Identifying population-level clinical patterns...
-├─ Processed 4 event types with 15,847 total events
-└─ ✅ Population Pattern Recognition complete
+Step 2/6: Risk Trajectory Analysis (34% complete)
+├─ Analyzing deteriorating conditions in last 90 days
+├─ Identified 67 patients with recent encounters requiring attention
+└─ ✅ Risk trajectory analysis complete
 
-Step 3/4: Clinical AI Reasoning (75% complete)
-├─ ⚙️ Processing clinical data through advanced AI reasoning...
-├─ Sending comprehensive analysis to claude-4-sonnet
-└─ ✅ Clinical AI Reasoning complete
+Step 3/6: Adherence Assessment (52% complete)
+├─ Reviewing care engagement patterns and compliance
+├─ Found 23 high-risk patients with poor care adherence
+└─ ✅ Care adherence assessment complete
 
-Step 4/4: Analysis Complete (100% complete)
-├─ ✅ Clinical insights generation completed successfully
-├─ AI-powered clinical analysis report ready for review
-└─ ✅ Analysis Complete
+Step 4/6: Intervention Prioritization (68% complete)
+├─ Ranking patients by clinical urgency and impact potential
+├─ Prioritized 15 high-impact intervention opportunities
+└─ ✅ Intervention prioritization complete
 
-🎉 Clinical Pattern Analysis completed!
-📋 AI Clinical Insights generated with concerning trends identified
-💡 Evidence-based recommendations for improving patient outcomes
+Step 5/6: Resource Allocation (84% complete)
+├─ Analyzing care distribution across 47 ZIP codes
+├─ Mapped resource needs across encounter types
+└─ ✅ Resource allocation analysis complete
+
+Step 6/6: Campaign Generation (100% complete)
+├─ Creating targeted intervention strategies
+├─ Generated personalized strategies for 768 patients
+└─ ✅ Population health strategy complete
+
+🎉 Population Health Manager Agent completed!
+📊 Comprehensive population analysis with targeted interventions
+💡 Projected 28% reduction in emergency visits through proactive care
 ```
 
 ## Snowflake-Specific Features
@@ -1076,23 +978,12 @@ To add new autonomous healthcare agents:
 5. **Test Agent Performance**: Validate execution time and report quality
 6. **Update Documentation**: Include agent capabilities and workflow description
 
-### Adding New Clinical Pattern Analysis
-
-To extend the Clinical Events Explorer:
-
-1. **Create Analysis Function**: Follow the pattern in `analyze_clinical_patterns_with_llm`
-2. **Implement Progress Tracking**: Use the step-by-step progress update pattern
-3. **Add Cortex Integration**: Ensure proper LLM model integration
-4. **Test with Real Data**: Validate with actual clinical events data
-5. **Document New Capabilities**: Update README with new analysis features
-
 ## Support
 
 For technical support:
 
 - **Application Issues**: Review troubleshooting section and create repository issue
 - **AI Agent Problems**: Check agent-specific troubleshooting guide above
-- **Clinical Pattern Analysis**: Review Clinical Events Explorer troubleshooting section
 - **Snowflake Issues**: Check [Snowflake Documentation](https://docs.snowflake.com) and [Cortex AI](https://docs.snowflake.com/en/user-guide/snowflake-cortex/llm-functions) documentation
 - **Streamlit in Snowflake**: Visit [Streamlit in Snowflake documentation](https://docs.snowflake.com/en/developer-guide/streamlit/about-streamlit)
 - **Fivetran**: Check [Fivetran documentation](https://fivetran.com/docs) for data connector issues
@@ -1108,19 +999,7 @@ Built with:
 
 ## Version History
 
-### Streamlit in Snowflake Release v2.0 (Current)
-- **🔥 Enhanced Clinical Events Explorer** with AI pattern analysis and step-by-step progress tracking
-- **🔥 Improved Agent Status Management** with visual indicators and reliable start/stop controls
-- **🔥 Advanced Settings Dashboard** with agent configuration, data quality monitoring, and performance tracking
-- **🔥 Enhanced Agent Configuration** with customizable thresholds and analysis parameters
-- **🔥 Data Quality Monitoring** with real-time assessment across all healthcare tables
-- **🔥 Agent Performance Monitoring** with comprehensive execution metrics and analytics
-- **🔥 Report Export & Management** with multiple format support and professional documentation
-- **🔥 Application Maintenance Tools** with schema inspector and troubleshooting support
-- **🔥 Model Selection per Agent** with individual Cortex model configuration
-- **🔥 Previous Results Display** showing completed agent steps and historical reports
-
-### Streamlit in Snowflake Release v1.0
+### Streamlit in Snowflake Release (Current)
 - **🤖 Added Five Autonomous Healthcare Agents** with multi-step reasoning workflows
 - **🔄 Implemented "Passing of the Baton"** workflow orchestration
 - **📊 Enhanced Settings Dashboard** with agent configuration and monitoring
@@ -1130,9 +1009,16 @@ Built with:
 - **🏔️ Native Snowflake Integration** with Cortex AI and single-file architecture
 - **⚡ Optimized Performance** for Snowflake's compute and storage separation
 
-### 🎯 Complete Feature Summary
+### 🎯 Complete Conversion Summary
 
-**✅ All Five AI Agents Included:**
+**✅ Key Transformations Made:**
+1. **BigQuery → Snowflake SQL**: All queries converted to Snowflake syntax
+2. **Vertex AI → Snowflake Cortex**: All AI calls now use `SNOWFLAKE.CORTEX.COMPLETE()`
+3. **Single File Architecture**: Everything consolidated into one `app.py` file (Streamlit in Snowflake requirement)
+4. **Data Type Handling**: Properly handles Snowflake VARCHAR dates and numeric fields
+5. **Same UI/UX**: Maintains identical interface and functionality
+
+**🤖 All Five AI Agents Included:**
 1. **🏥 Proactive Care Management Agent**
 2. **👥 Population Health Manager Agent**
 3. **💰 Prior Authorization Agent**
@@ -1143,7 +1029,7 @@ Built with:
 - **AI Clinical Agents Tab**: All 5 autonomous agents with multi-step workflows
 - **Patient Explorer**: Risk distribution, demographics, geographic analysis
 - **Encounter Analysis**: Readmission tracking, encounter distribution
-- **Clinical Events Explorer**: Event type analysis, timeline visualization, AI pattern analysis
+- **Clinical Events Explorer**: Event type analysis, timeline visualization
 - **Claims Analysis**: Financial metrics, payment efficiency
 - **Cortex Clinical Insights**: 5 clinical analysis micro-applications
 - **Analysis History**: Complete audit trail
@@ -1163,4 +1049,4 @@ Built with:
 
 ---
 
-**🚀 Experience the future of healthcare analytics with autonomous AI agents that transform complex clinical workflows into actionable insights through intelligent automation and multi-step reasoning - all powered by Snowflake's native AI capabilities with enhanced clinical pattern analysis and comprehensive monitoring.** 
+**🚀 Experience the future of healthcare analytics with autonomous AI agents that transform complex clinical workflows into actionable insights through intelligent automation and multi-step reasoning - all powered by Snowflake's native AI capabilities.**
