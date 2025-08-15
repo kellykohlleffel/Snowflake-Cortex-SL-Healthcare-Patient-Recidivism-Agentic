@@ -488,12 +488,15 @@ The application follows a modern data architecture pattern optimized for healthc
 ### Snowflake Cortex Models
 - Access to Cortex LLM functions
 - Model availability in your Snowflake region:
+  - openai-gpt-oss-20b
+  - openai-gpt-4.1
   - claude-4-sonnet
   - claude-3-7-sonnet 
   - claude-3-5-sonnet
   - llama3.1-70b
   - deepseek-r1
   - snowflake-arctic
+  - plus many more
 
 ## Setup and Installation
 
